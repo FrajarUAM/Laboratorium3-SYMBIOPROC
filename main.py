@@ -2,9 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-# -----------------------------
-# Podstawowy model – bez wrażliwości (do wykorzystania w pochodnych)
-# -----------------------------
+# Podstawowy model – bez wrażliwości
 def base_model(y, config):
     p53, mdmcyto, mdmn, pten = y
     siRNA = config.get("siRNA", False)
@@ -34,9 +32,7 @@ def base_model(y, config):
 
     return np.array([dp53, dMDMcyto, dMDMn, dPTEN])
 
-# -----------------------------
 # Solver RK4 dla układu z wrażliwościami
-# -----------------------------
 def rk4_sensitivity(f, y0, S0, t0, tf, h, config, param_keys):
     times = [t0]
     y_list = [y0]
@@ -61,9 +57,6 @@ def rk4_sensitivity(f, y0, S0, t0, tf, h, config, param_keys):
 
     return np.array(times), np.array(y_list), np.array(S_list)
 
-# -----------------------------
-# Model biologiczny z wrażliwościami
-# -----------------------------
 def model_with_sensitivity(t, y, S, config, param_keys):
     dydt = base_model(y, config)
 
@@ -77,9 +70,6 @@ def model_with_sensitivity(t, y, S, config, param_keys):
 
     return dydt, dSdt
 
-# -----------------------------
-# Numeryczne pochodne
-# -----------------------------
 def compute_jacobian_y(y, config, param_keys):
     eps = 1e-6
     n = len(y)
@@ -103,9 +93,8 @@ def compute_dF_dtheta(y, config, key, param_keys):
     f_pert = base_model(y, config_pert)
     return (f_pert - f0) / eps
 
-# -----------------------------
+
 # Analiza wrażliwości
-# -----------------------------
 def run_sensitivity_analysis(params_nominal, scenario):
     y0 = np.array([26854, 11173, 17245, 154378])
     S0 = np.zeros((len(params_nominal), len(y0)))
@@ -127,9 +116,6 @@ def run_sensitivity_analysis(params_nominal, scenario):
         sensitivities[key] = S_norm
     return t, sensitivities, y[:, 0]
 
-# -----------------------------
-# Ranking i wykresy
-# -----------------------------
 def compute_rankings(sensitivities, t_array):
     RS, OS = {}, {}
     for key, S in sensitivities.items():
@@ -188,9 +174,7 @@ def plot_rankings_bar(RS_dict, OS_dict, scenario_name, output_dir):
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, f"ranking_OS_{scenario_name}.png"))
     plt.close()
-# -----------------------------
-# Wykresy wpływu zmiany parametru ±20%
-# -----------------------------
+
 def plot_param_shift_effects(params_nominal, best_param, worst_param, scenarios, output_dir):
     for param in [best_param, worst_param]:
         theta_nom = params_nominal[param]
